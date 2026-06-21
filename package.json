@@ -1,0 +1,33 @@
+{
+  "name": "walter",
+  "version": "1.0.0",
+  "description": "Walter is an (in)genius way to quickly build a SaaS monetized and authenticated through Shopify!",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "jest",
+    "cdk": "cdk"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "aws-cdk": "2.1128.0",
+    "tsx": "^4.22.4",
+    "typescript": "~5.9.3"
+  },
+  "dependencies": {
+    "aws-cdk-lib": "^2.260.0",
+    "constructs": "^10.5.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sparse-Dynamix/walter.git"
+  },
+  "keywords": [],
+  "author": "Sepehr Laal",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Sparse-Dynamix/walter/issues"
+  },
+  "homepage": "https://github.com/Sparse-Dynamix/walter#readme"
+}
