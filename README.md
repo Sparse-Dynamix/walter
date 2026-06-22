@@ -35,7 +35,7 @@ shopify store auth --store "$SHOPIFY_STORE" \
   --scopes read_orders,write_orders,write_products,read_customers,write_draft_orders
 
 npm run setup    # synth + Shopify product sync (WALTER_SHOPIFY_SETUP=1)
-npm run dev      # local API + ngrok + shopify app dev
+npm run dev      # local API + ngrok
 ```
 
 Payment links are printed during `npm run setup` (see `.walter/shopify-state.json`).
@@ -44,26 +44,19 @@ Payment links are printed during `npm run setup` (see `.walter/shopify-state.jso
 
 `shopify auth login` authenticates you to the Partner account. **`shopify store auth`** is a separate, per-store step that grants Walter's CLI access to your dev store Admin API (product sync, teardown, smoke tests). Re-run it when scopes change or you see "store not found" / permission errors during `npm run setup`.
 
-### Webhook secret
+### App credentials
 
-`SHOPIFY_WEBHOOK_SECRET` must match the **walter-dev** app API secret (same app as `shopify.app.dev.toml`):
+From `shopify app env show --config shopify.app.dev.toml`, copy `SHOPIFY_API_SECRET` into `.env` as `SHOPIFY_WEBHOOK_SECRET` (webhook HMAC).
 
-```bash
-shopify app env show --config shopify.app.dev.toml
-```
+Webhooks registered by a different app (e.g. via `store execute` alone) will HMAC-sign with that app's secret and return 401.
 
-Copy `SHOPIFY_API_SECRET` into `.env` as `SHOPIFY_WEBHOOK_SECRET`. Webhooks registered by a different app (e.g. via `store execute` alone) will HMAC-sign with that app's secret and return 401.
+### Install walter-dev
 
-When `shopify app dev` cannot attach to your dev store, register webhooks by deploying with your current ngrok URL as `application_url`, then run `shopify app deploy --config shopify.app.dev.toml --allow-updates`. Restore `application_url` to `https://localhost` afterward if you prefer.
+Walter uses [Shopify managed installation](https://shopify.dev/docs/apps/auth/installation#shopify-managed-installation) — no custom OAuth callback. After `npm run dev`, deploy with `shopify app deploy --config shopify.app.dev.toml --allow-updates` (set `application_url` to your public API URL first, or use `shopify app dev` so the CLI updates it). Install from the [Partner Dashboard](https://partners.shopify.com) → walter-dev → **Install app** → select your store.
 
-### Dev smoke tests (browser checkout)
+### Browser checkout smoke test
 
-Many dev stores enable **storefront password protection** ("Opening soon"). Cart URLs from setup then redirect to `/password` instead of checkout. Workarounds:
-
-1. Disable the password in Shopify admin (Online Store → Preferences), or
-2. Use a **draft-order invoice URL** (requires `write_draft_orders` in store auth scopes) — checkout loads without the storefront wall.
-
-Payment card fields live in cross-origin PCI iframes; browser automation may not be able to type card numbers. Completing payment may require manual card entry or completing the draft order via Admin API after filling checkout in the browser.
+Use a draft-order invoice URL if the storefront is password-protected. Complete payment manually in the browser (test card `4242424242424242` with Shopify Payments test mode on). `npm test` covers the webhook → DynamoDB → SES → revoke path without a browser.
 
 ## Prod
 

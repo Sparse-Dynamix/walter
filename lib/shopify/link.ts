@@ -1,7 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import { getRepoRoot, shopifyExec } from "./cli.js";
-import { readTomlClientId } from "./products.js";
+import { getRepoRoot, shopifyAppEnv, shopifyExec } from "./cli.js";
 import { readState, writeState, type ShopifyState } from "./state.js";
 
 function readShopifyProjectStore(): string | undefined {
@@ -31,10 +30,15 @@ export function ensureAppLinked(): string {
     return fromProject.replace(/^https?:\/\//, "").replace(/\/$/, "");
   }
 
-  const clientId = readTomlClientId();
-  if (clientId) {
+  let appClientId: string | undefined;
+  try {
+    appClientId = shopifyAppEnv().SHOPIFY_API_KEY;
+  } catch {
+    // CLI not available or app not linked
+  }
+  if (appClientId) {
     throw new Error(
-      `Shopify app is linked (client_id ${clientId}) but no dev store is set. ` +
+      `Shopify app is linked (client_id ${appClientId}) but no dev store is set. ` +
         "Create a dev store at https://dev.shopify.com/dashboard, then set SHOPIFY_STORE " +
         "or run shopify app dev to populate .shopify/project.json.",
     );
@@ -56,10 +60,16 @@ export function ensureAppLinked(): string {
 
 export function persistLinkMetadata(state: ShopifyState): ShopifyState {
   const storeDomain = ensureAppLinked();
+  let appClientId = state.appClientId;
+  try {
+    appClientId = shopifyAppEnv().SHOPIFY_API_KEY ?? appClientId;
+  } catch {
+    // keep existing
+  }
   return {
     ...state,
     storeDomain,
-    appClientId: readTomlClientId() ?? state.appClientId,
+    appClientId,
   };
 }
 

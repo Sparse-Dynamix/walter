@@ -85,3 +85,27 @@ export function shopifyStoreExecJson<T>(
   );
   return JSON.parse(output) as T;
 }
+
+function shopifyAppToml(): string {
+  return (process.env.WALTER_MODE ?? "dev") === "prod"
+    ? "shopify.app.prod.toml"
+    : "shopify.app.dev.toml";
+}
+
+export function shopifyAppEnv(): Record<string, string> {
+  const output = shopifyExec([
+    "app",
+    "env",
+    "show",
+    "--config",
+    shopifyAppToml(),
+  ]);
+  const env: Record<string, string> = {};
+  for (const line of output.split("\n")) {
+    const match = line.trim().match(/^([A-Z0-9_]+)=(.*)$/);
+    if (match) {
+      env[match[1]] = match[2];
+    }
+  }
+  return env;
+}

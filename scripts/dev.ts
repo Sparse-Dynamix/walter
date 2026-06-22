@@ -83,15 +83,6 @@ async function main(): Promise<void> {
   const publicUrl = await waitForNgrok();
 
   console.log(`ngrok: ${publicUrl}`);
-
-  run("shopify", [
-    "app",
-    "dev",
-    "--config",
-    "shopify.app.dev.toml",
-    `--tunnel-url=${publicUrl}`,
-  ]);
-
   console.log("Dev stack running. SES viewer: http://localhost:8005");
 }
 

@@ -200,13 +200,3 @@ export function mergeStateProducts(
     updatedAt: new Date().toISOString(),
   };
 }
-
-export function readTomlClientId(): string | undefined {
-  const tomlPath = path.join(getRepoRoot(), "shopify.app.dev.toml");
-  if (!fs.existsSync(tomlPath)) {
-    return undefined;
-  }
-  const content = fs.readFileSync(tomlPath, "utf8");
-  const match = content.match(/^client_id\s*=\s*"([^"]*)"/m);
-  return match?.[1] || undefined;
-}

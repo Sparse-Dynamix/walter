@@ -9,7 +9,7 @@ embedded = false
 scopes = "read_orders,write_orders,write_products,read_customers,write_draft_orders"
 
 [auth]
-redirect_urls = [ "https://localhost/auth/callback" ]
+redirect_urls = [ "https://localhost/health" ]
 
 [webhooks]
 api_version = "2025-01"

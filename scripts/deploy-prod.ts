@@ -21,6 +21,10 @@ function patchProdToml(apiUrl: string): void {
     /^application_url\s*=.*/m,
     `application_url = "${base}"`,
   );
+  content = content.replace(
+    /^redirect_urls\s*=.*/m,
+    `redirect_urls = [ "${base}/health" ]`,
+  );
   fs.writeFileSync(tomlPath, content);
 }
 
