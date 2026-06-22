@@ -2,22 +2,45 @@
   "name": "walter",
   "version": "1.0.0",
   "description": "Walter is an (in)genius way to quickly build a SaaS monetized and authenticated through Shopify!",
-  "main": "index.js",
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
   "scripts": {
     "build": "tsc",
     "watch": "tsc -w",
-    "test": "jest",
-    "cdk": "cdk"
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "cdk": "cdk",
+    "setup": "WALTER_SHOPIFY_SETUP=1 cdk synth -c mode=dev",
+    "dev": "WALTER_MODE=dev tsx scripts/dev.ts",
+    "deploy:prod": "tsx scripts/deploy-prod.ts",
+    "destroy": "WALTER_MODE=dev tsx scripts/teardown.ts",
+    "destroy:prod": "WALTER_MODE=prod tsx scripts/teardown.ts",
+    "format": "biome format --write",
+    "lint": "biome lint --fix"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.0",
     "@types/node": "^24.10.1",
+    "@types/react": "^19.2.7",
     "aws-cdk": "2.1128.0",
+    "aws-ses-v2-local": "^2.5.0",
     "tsx": "^4.22.4",
-    "typescript": "~5.9.3"
+    "typescript": "~5.9.3",
+    "vitest": "^4.0.16"
   },
   "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.948.0",
+    "@aws-sdk/client-sesv2": "^3.948.0",
+    "@aws-sdk/lib-dynamodb": "^3.948.0",
+    "@hono/node-server": "^1.19.7",
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.0.0",
     "aws-cdk-lib": "^2.260.0",
-    "constructs": "^10.5.0"
+    "constructs": "^10.5.0",
+    "hono": "^4.11.1",
+    "react": "^19.2.3",
+    "react-email": "^5.2.1"
   },
   "repository": {
     "type": "git",

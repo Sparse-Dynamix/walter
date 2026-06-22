@@ -1,0 +1,30 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+name = "walter-dev"
+client_id = ""
+application_url = "https://localhost"
+embedded = false
+
+[access_scopes]
+scopes = "read_orders,write_products,read_customers"
+
+[auth]
+redirect_urls = [ "https://localhost/auth/callback" ]
+
+[webhooks]
+api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/paid"]
+  uri = "/webhooks/orders-paid"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/cancelled"]
+  uri = "/webhooks/orders-cancelled"
+
+  [[webhooks.subscriptions]]
+  topics = ["refunds/create"]
+  uri = "/webhooks/refunds-create"
+
+[build]
+automatically_update_urls_on_dev = true

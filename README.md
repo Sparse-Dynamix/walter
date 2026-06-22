@@ -4,34 +4,70 @@ Walter is an (in)genius way to quickly build a SaaS monetized and authenticated 
 
 ## Synopsis
 
-Walter's primary objective is to vend API keys for a simple SaaS, which handles its storefront through Shopify.
+Walter vends API keys for a simple SaaS. **Shopify handles payment only** — subscription products and checkout links. On `orders/paid`, Walter creates an API key in DynamoDB and emails it via AWS SES.
 
-The way it works is that, the SaaS offerings are listed on Shopify as products, and upon user payments, Shopify triggers Walter's webhooks which then kicks off API key vending and syncing into DynamoDB and delivery through AWS SES.
+Webhooks:
 
-The three [Shopify webhooks](https://shopify.dev/docs/api/webhooks/latest#list-of-topics) Walter currently listens to are:
+- `orders/paid` — vend API key (one per order; same email can have multiple keys)
+- `orders/cancelled` — revoke keys for that order
+- `refunds/create` — revoke keys for that order
 
-- `orders/paid`: a new API key is added for the email address that paid
-- `orders/cancelled`: API key for the email address is revoked
-- `refunds/create`: API key for the email address is revoked
+`GET|POST /api/check` validates API keys for your SaaS.
 
-Walter exposes an `/api/check` for consumption in the SaaS code itself to check API key validity.
-
-Walter is built on the AWS CDK and uses [Shopify Hydrogen](https://shopify.dev/docs/api/shopify-cli/hydrogen) to manage the storefront.
-
-Walter is coded in TypeScript and serves itself with [Hono](https://hono.dev).
+Built with **AWS CDK**, **Hono**, **React Email**, and the **Shopify CLI** (no Hydrogen storefront).
 
 ## Requirements
 
-- A working and validated Shopify account (for payments)
-- A non sandbox AWS SES account (for emails and key vending)
-- A DynamoDB database backend (to sync Shopify orders with)
-- Authenticated Shopify and Ngrok CLIs (to run tests with)
+- Shopify Partner account + dev store (`shopify auth login`)
+- ngrok (dev webhooks)
+- Docker (DynamoDB Local + aws-ses-v2-local)
+- AWS account + verified SES sender (prod)
 
-## AWS CDK L3 Construct
+## Quick start (dev)
+
+```bash
+cp .env.example .env
+# set SHOPIFY_STORE, SENDER_EMAIL
+
+npm run setup    # synth + Shopify product sync (WALTER_SHOPIFY_SETUP=1)
+npm run dev      # local API + ngrok + shopify app dev
+```
+
+Payment links are printed during `npm run setup` (see `.walter/shopify-state.json`).
+
+## Prod
+
+```bash
+export SENDER_EMAIL=... SHOPIFY_WEBHOOK_SECRET=...
+npm run deploy:prod
+```
+
+## Destroy
+
+```bash
+npm run destroy        # Shopify teardown (dev)
+npm run destroy:prod   # Shopify teardown + cdk destroy
+```
+
+## L3 construct
 
 ```ts
-export interface ShopifySubscriptionProduct extends cdk.Construct {
-  price: number; // USD
-  label: string;
-}
+import { ShopifyStorefront } from 'walter';
+
+new ShopifyStorefront(this, 'Storefront', {
+  mode: 'dev', // or 'prod'
+  subscriptionProducts: [
+    { label: 'Starter', price: 9 },
+    { label: 'Pro', price: 29 },
+  ],
+  senderEmail: 'noreply@yourdomain.com',
+});
 ```
+
+## Tests
+
+```bash
+npm test
+```
+
+Vitest integration tests require real Shopify CLI, Docker, and ngrok. Run `npm run setup` first.

@@ -1,0 +1,28 @@
+name = "walter-prod"
+client_id = ""
+application_url = "https://example.com"
+embedded = false
+
+[access_scopes]
+scopes = "read_orders,write_products,read_customers"
+
+[auth]
+redirect_urls = [ "https://example.com/auth/callback" ]
+
+[webhooks]
+api_version = "2025-01"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/paid"]
+  uri = "/webhooks/orders-paid"
+
+  [[webhooks.subscriptions]]
+  topics = ["orders/cancelled"]
+  uri = "/webhooks/orders-cancelled"
+
+  [[webhooks.subscriptions]]
+  topics = ["refunds/create"]
+  uri = "/webhooks/refunds-create"
+
+[build]
+automatically_update_urls_on_dev = false

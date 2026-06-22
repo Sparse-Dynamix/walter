@@ -1,16 +1,25 @@
-import * as cdk from 'aws-cdk-lib/core';
-import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import * as cdk from "aws-cdk-lib/core";
+import { Construct } from "constructs";
+import { ShopifyStorefront } from "./constructs/shopify-storefront.js";
+import type { WalterMode } from "./types.js";
+
+export interface WalterStackProps extends cdk.StackProps {
+  mode: WalterMode;
+}
 
 export class WalterStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
+  public readonly storefront: ShopifyStorefront;
+
+  constructor(scope: Construct, id: string, props: WalterStackProps) {
     super(scope, id, props);
 
-    // The code that defines your stack goes here
-
-    // example resource
-    // const queue = new sqs.Queue(this, 'WalterQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
+    this.storefront = new ShopifyStorefront(this, "Storefront", {
+      mode: props.mode,
+      subscriptionProducts: [
+        { label: "Walter Starter", price: 9 },
+        { label: "Walter Pro", price: 29 },
+      ],
+      senderEmail: process.env.SENDER_EMAIL ?? "noreply@example.com",
+    });
   }
 }
