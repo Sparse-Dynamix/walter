@@ -1,5 +1,8 @@
 import { DynamoDBClient } from "@aws-sdk/client-dynamodb";
 import { DynamoDBDocumentClient } from "@aws-sdk/lib-dynamodb";
+import { loadEnv } from "../../lib/load-env.js";
+
+loadEnv();
 
 const client = new DynamoDBClient({
   ...(process.env.DYNAMODB_ENDPOINT

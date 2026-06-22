@@ -1,6 +1,10 @@
 #!/usr/bin/env tsx
+import { loadEnv } from "../lib/load-env.js";
+
+loadEnv();
+
 import { spawn } from "node:child_process";
-import { runShopifyTeardown } from "../lib/shopify/teardown.js";
+import { runShopifyTeardown } from "../lib/shopify/setup.js";
 
 const mode = (process.env.WALTER_MODE ?? "dev") as "dev" | "prod";
 

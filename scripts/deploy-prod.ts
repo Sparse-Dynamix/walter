@@ -1,4 +1,8 @@
 #!/usr/bin/env tsx
+import { loadEnv } from "../lib/load-env.js";
+
+loadEnv();
+
 import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";

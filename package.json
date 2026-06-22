@@ -38,6 +38,7 @@
     "@react-email/render": "^2.0.0",
     "aws-cdk-lib": "^2.260.0",
     "constructs": "^10.5.0",
+    "dotenv": "^17.4.2",
     "hono": "^4.11.1",
     "react": "^19.2.3",
     "react-email": "^5.2.1"

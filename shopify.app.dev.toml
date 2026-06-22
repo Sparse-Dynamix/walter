@@ -6,7 +6,7 @@ application_url = "https://localhost"
 embedded = false
 
 [access_scopes]
-scopes = "read_orders,write_products,read_customers"
+scopes = "read_orders,write_orders,write_products,read_customers,write_draft_orders"
 
 [auth]
 redirect_urls = [ "https://localhost/auth/callback" ]

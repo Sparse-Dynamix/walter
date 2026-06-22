@@ -1,4 +1,8 @@
 #!/usr/bin/env node
+import { loadEnv } from "../lib/load-env.js";
+
+loadEnv();
+
 import * as cdk from "aws-cdk-lib/core";
 import { WalterStack } from "../lib/walter-stack.js";
 import type { WalterMode } from "../lib/types.js";

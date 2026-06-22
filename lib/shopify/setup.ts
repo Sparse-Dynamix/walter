@@ -1,7 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { ShopifySubscriptionProduct } from "../types.js";
-import { shopifyExec, shopifyAppArgs } from "./cli.js";
+import { shopifyExec, shopifyStoreExecJson } from "./cli.js";
 import { bootstrapLink } from "./link.js";
 import { mergeStateProducts, syncProducts } from "./products.js";
 import { getStatePath, readState, writeState } from "./state.js";
@@ -41,13 +41,7 @@ export function runShopifyTeardown(mode: "dev" | "prod" = "dev"): void {
     const gid = product.gid.replace(/"/g, '\\"');
     const mutation = `mutation { productDelete(input: { id: "${gid}" }) { deletedProductId userErrors { message } } }`;
     try {
-      shopifyExec([
-        "app",
-        "execute",
-        ...shopifyAppArgs(),
-        "--query",
-        mutation,
-      ]);
+      shopifyStoreExecJson(["--allow-mutations", "--query", mutation]);
       console.log(`Deleted product ${product.label}`);
     } catch (err) {
       console.warn(`Failed to delete ${product.label}:`, err);
@@ -55,7 +49,7 @@ export function runShopifyTeardown(mode: "dev" | "prod" = "dev"): void {
   }
 
   try {
-    shopifyExec(["app", "deploy", "--config", config, "--force"], {
+    shopifyExec(["app", "deploy", "--config", config, "--allow-updates"], {
       stdio: "inherit",
     });
   } catch {

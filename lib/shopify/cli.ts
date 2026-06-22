@@ -1,4 +1,5 @@
-import { execSync, spawnSync } from "node:child_process";
+import { spawnSync } from "node:child_process";
+import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -28,7 +29,11 @@ export function shopifyExec(args: string[], options: ExecOptions = {}): string {
   if (result.status !== 0) {
     const err = new Error(
       `Command failed: shopify ${args.join(" ")}\n${result.stderr ?? ""}`,
-    ) as NodeJS.ErrnoException & { status?: number; stdout?: string; stderr?: string };
+    ) as NodeJS.ErrnoException & {
+      status?: number;
+      stdout?: string;
+      stderr?: string;
+    };
     err.status = result.status ?? 1;
     err.stdout = result.stdout;
     err.stderr = result.stderr;
@@ -37,23 +42,46 @@ export function shopifyExec(args: string[], options: ExecOptions = {}): string {
   return result.stdout ?? "";
 }
 
-export function shopifyExecJson<T>(
-  args: string[],
-  options: ExecOptions = {},
-): T {
-  const output = shopifyExec(args, options);
-  return JSON.parse(output) as T;
-}
-
 export function getRepoRoot(): string {
   return REPO_ROOT;
 }
 
-export function shopifyAppArgs(): string[] {
-  const args = ["--config", "shopify.app.dev.toml"];
-  const store = process.env.SHOPIFY_STORE;
-  if (store) {
-    args.push("--store", store.replace(/^https?:\/\//, "").replace(/\/$/, ""));
+export function getStoreDomain(): string | undefined {
+  const fromEnv = process.env.SHOPIFY_STORE;
+  if (fromEnv) {
+    return fromEnv.replace(/^https?:\/\//, "").replace(/\/$/, "");
   }
-  return args;
+  const projectJson = path.join(REPO_ROOT, ".shopify", "project.json");
+  if (fs.existsSync(projectJson)) {
+    try {
+      const data = JSON.parse(fs.readFileSync(projectJson, "utf8")) as {
+        shop?: string;
+        dev_store_url?: string;
+      };
+      const store = data.dev_store_url ?? data.shop;
+      if (store) {
+        return store.replace(/^https?:\/\//, "").replace(/\/$/, "");
+      }
+    } catch {
+      // ignore
+    }
+  }
+  return undefined;
+}
+
+export function shopifyStoreExecJson<T>(
+  args: string[],
+  options: ExecOptions = {},
+): T {
+  const store = getStoreDomain();
+  if (!store) {
+    throw new Error(
+      "No Shopify store configured. Set SHOPIFY_STORE or run shopify app config link.",
+    );
+  }
+  const output = shopifyExec(
+    ["store", "execute", "--store", store, "--json", ...args],
+    options,
+  );
+  return JSON.parse(output) as T;
 }

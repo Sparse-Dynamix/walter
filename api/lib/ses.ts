@@ -2,8 +2,10 @@ import { SESv2Client, SendEmailCommand } from "@aws-sdk/client-sesv2";
 import { render } from "@react-email/render";
 import { ApiKeyEmail } from "../../emails/api-key.js";
 import { getSenderEmail } from "./config.js";
+import { loadEnv } from "../../lib/load-env.js";
 
 function createSesClient(): SESv2Client {
+  loadEnv();
   const endpoint = process.env.SES_ENDPOINT;
   if (endpoint) {
     return new SESv2Client({

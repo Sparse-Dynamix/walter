@@ -3,6 +3,9 @@ import {
   DescribeTableCommand,
   DynamoDBClient,
 } from "@aws-sdk/client-dynamodb";
+import { loadEnv } from "../lib/load-env.js";
+
+loadEnv();
 
 const endpoint = process.env.DYNAMODB_ENDPOINT ?? "http://localhost:8000";
 const tableName = process.env.TABLE_NAME ?? "walter-api-keys";

@@ -1,7 +1,9 @@
 #!/usr/bin/env tsx
+import { loadEnv } from "../lib/load-env.js";
+
+loadEnv();
+
 import { spawn, type ChildProcess } from "node:child_process";
-import { serve } from "@hono/node-server";
-import { app } from "../api/index.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const children: ChildProcess[] = [];
@@ -50,8 +52,27 @@ function shutdown(): void {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
+async function waitForDocker(): Promise<void> {
+  for (let i = 0; i < 30; i++) {
+    try {
+      const res = await fetch("http://127.0.0.1:8000");
+      if (res.ok || res.status === 400) {
+        return;
+      }
+    } catch {
+      // retry
+    }
+    await new Promise((r) => setTimeout(r, 1000));
+  }
+  throw new Error("DynamoDB Local not available on :8000");
+}
+
 async function main(): Promise<void> {
+  const { serve } = await import("@hono/node-server");
+  const { app } = await import("../api/index.js");
+
   run("docker", ["compose", "up", "-d", "dynamodb-local", "ses-local"]);
+  await waitForDocker();
   run("npx", ["tsx", "scripts/dynamodb-init.ts"]);
 
   serve({ fetch: app.fetch, port: PORT }, () => {
@@ -60,7 +81,6 @@ async function main(): Promise<void> {
 
   run("ngrok", ["http", String(PORT)]);
   const publicUrl = await waitForNgrok();
-  const host = new URL(publicUrl).host;
 
   console.log(`ngrok: ${publicUrl}`);
 
@@ -69,7 +89,7 @@ async function main(): Promise<void> {
     "dev",
     "--config",
     "shopify.app.dev.toml",
-    `--tunnel-url=https://${host}:${PORT}`,
+    `--tunnel-url=${publicUrl}`,
   ]);
 
   console.log("Dev stack running. SES viewer: http://localhost:8005");
