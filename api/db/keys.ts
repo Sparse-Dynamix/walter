@@ -20,6 +20,11 @@ export interface ApiKeyRecord {
   updatedAt: string;
 }
 
+export interface RevokedKey {
+  email: string;
+  productLabel?: string;
+}
+
 export async function getKeyByHash(
   apiKeyHash: string,
 ): Promise<ApiKeyRecord | undefined> {
@@ -74,10 +79,12 @@ export async function createApiKey(params: {
   return record;
 }
 
-export async function revokeKeysByOrderId(orderId: string): Promise<number> {
+export async function revokeKeysByOrderId(
+  orderId: string,
+): Promise<RevokedKey[]> {
   const keys = await getKeysByOrderId(orderId);
   const now = new Date().toISOString();
-  let count = 0;
+  const revoked: RevokedKey[] = [];
 
   for (const key of keys) {
     if (key.status === "revoked") {
@@ -92,10 +99,10 @@ export async function revokeKeysByOrderId(orderId: string): Promise<number> {
         ExpressionAttributeValues: { ":revoked": "revoked", ":now": now },
       }),
     );
-    count += 1;
+    revoked.push({ email: key.email, productLabel: key.productLabel });
   }
 
-  return count;
+  return revoked;
 }
 
 export async function isOrderAlreadyVended(orderId: string): Promise<boolean> {

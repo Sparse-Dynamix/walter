@@ -5,19 +5,23 @@ import * as lambda from "aws-cdk-lib/aws-lambda";
 import { NodejsFunction } from "aws-cdk-lib/aws-lambda-nodejs";
 import * as apigwv2 from "aws-cdk-lib/aws-apigatewayv2";
 import { HttpLambdaIntegration } from "aws-cdk-lib/aws-apigatewayv2-integrations";
+import * as ses from "aws-cdk-lib/aws-ses";
 import { Construct } from "constructs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import type { ShopifySubscriptionProduct, WalterMode } from "../types.js";
+import {
+  apiGatewayName,
+  apiKeysTableName,
+  type ProductConfig,
+} from "../product-config.js";
 import { runShopifySetup } from "../shopify/setup.js";
+import type { DeployMode, ShopifySubscriptionProduct } from "../types.js";
 
 export type { ShopifySubscriptionProduct };
 
-export interface ShopifyStorefrontProps {
-  mode: WalterMode;
+export interface ShopifyStorefrontProps extends ProductConfig {
+  mode: DeployMode;
   subscriptionProducts: ShopifySubscriptionProduct[];
-  senderEmail: string;
-  tableName?: string;
 }
 
 export class ShopifyStorefront extends Construct {
@@ -31,7 +35,7 @@ export class ShopifyStorefront extends Construct {
     super(scope, id);
 
     this.subscriptionProducts = props.subscriptionProducts;
-    const tableName = props.tableName ?? "walter-api-keys";
+    const tableName = apiKeysTableName(props.productSlug);
 
     runShopifySetup(props.subscriptionProducts);
 
@@ -59,6 +63,10 @@ export class ShopifyStorefront extends Construct {
       projectionType: dynamodb.ProjectionType.ALL,
     });
 
+    new ses.EmailIdentity(this, "SenderDomain", {
+      identity: ses.Identity.domain(props.senderDomain),
+    });
+
     const repoRoot = path.resolve(
       path.dirname(fileURLToPath(import.meta.url)),
       "../..",
@@ -73,6 +81,9 @@ export class ShopifyStorefront extends Construct {
       memorySize: 256,
       environment: {
         TABLE_NAME: this.table.tableName,
+        PRODUCT_NAME: props.productName,
+        PRODUCT_SLUG: props.productSlug,
+        SENDER_DOMAIN: props.senderDomain,
         SENDER_EMAIL: props.senderEmail,
         SHOPIFY_WEBHOOK_SECRET: webhookSecretValue,
       },
@@ -106,7 +117,7 @@ export class ShopifyStorefront extends Construct {
     );
 
     this.httpApi = new apigwv2.HttpApi(this, "HttpApi", {
-      apiName: "walter-api",
+      apiName: apiGatewayName(props.productSlug),
     });
 
     const integration = new HttpLambdaIntegration(

@@ -1,21 +1,43 @@
+import { apiKeysTableName } from "../../lib/product-config.js";
+
+function requireEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`${name} is required`);
+  }
+  return value;
+}
+
+export function getProductName(): string {
+  return requireEnv("PRODUCT_NAME");
+}
+
+export function getProductSlug(): string {
+  return requireEnv("PRODUCT_SLUG");
+}
+
+export function getSenderDomain(): string {
+  return requireEnv("SENDER_DOMAIN");
+}
+
 export function getTableName(): string {
-  return process.env.TABLE_NAME ?? "walter-api-keys";
+  const fromEnv = process.env.TABLE_NAME;
+  if (fromEnv) {
+    return fromEnv;
+  }
+  return apiKeysTableName(getProductSlug());
 }
 
 export function getSenderEmail(): string {
   const email = process.env.SENDER_EMAIL;
-  if (!email) {
-    throw new Error("SENDER_EMAIL is required");
+  if (email) {
+    return email;
   }
-  return email;
+  return `noreply@${getSenderDomain()}`;
 }
 
 export function getWebhookSecret(): string {
-  const secret = process.env.SHOPIFY_WEBHOOK_SECRET;
-  if (!secret) {
-    throw new Error("SHOPIFY_WEBHOOK_SECRET is required");
-  }
-  return secret;
+  return requireEnv("SHOPIFY_WEBHOOK_SECRET");
 }
 
 export function isDevEndpoints(): boolean {

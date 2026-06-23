@@ -3,4 +3,6 @@ export interface ShopifySubscriptionProduct {
   label: string;
 }
 
-export type WalterMode = "dev" | "prod";
+export type DeployMode = "dev" | "prod";
+
+export type { ProductConfig } from "./product-config.js";

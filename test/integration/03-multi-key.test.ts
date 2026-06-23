@@ -28,7 +28,7 @@ describe("multi-key per email", () => {
       const payload = {
         id: Number(orderId),
         email: targetEmail,
-        line_items: [{ title: "Walter Pro" }],
+        line_items: [{ title: "Pro" }],
       };
       const rawBody = JSON.stringify(payload);
       const hmac = createHmac("sha256", secret)

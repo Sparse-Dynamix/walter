@@ -4,6 +4,7 @@ import {
   extractRefundOrderId,
   type ShopifyRefundPayload,
 } from "../../lib/shopify-payload.js";
+import { notifyRevokedKeys } from "../../lib/ses.js";
 import {
   shopifyWebhookMiddleware,
   type WebhookVariables,
@@ -24,6 +25,7 @@ refundsCreateRoute.post(
     }
 
     const revoked = await revokeKeysByOrderId(orderId);
-    return c.json({ ok: true, orderId, revoked });
+    await notifyRevokedKeys(revoked, "refunded");
+    return c.json({ ok: true, orderId, revoked: revoked.length });
   },
 );

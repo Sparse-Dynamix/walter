@@ -4,6 +4,7 @@ import {
   extractOrderId,
   type ShopifyOrderPayload,
 } from "../../lib/shopify-payload.js";
+import { notifyRevokedKeys } from "../../lib/ses.js";
 import {
   shopifyWebhookMiddleware,
   type WebhookVariables,
@@ -19,6 +20,7 @@ ordersCancelledRoute.post(
     const payload = JSON.parse(rawBody) as ShopifyOrderPayload;
     const orderId = extractOrderId(payload);
     const revoked = await revokeKeysByOrderId(orderId);
-    return c.json({ ok: true, orderId, revoked });
+    await notifyRevokedKeys(revoked, "cancelled");
+    return c.json({ ok: true, orderId, revoked: revoked.length });
   },
 );

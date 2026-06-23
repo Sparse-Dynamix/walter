@@ -1,7 +1,7 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 name = "walter-dev"
-client_id = ""
+client_id = "30470d9291e571f3830501a01d5dfc55"
 application_url = "https://localhost"
 embedded = false
 

@@ -7,6 +7,10 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import {
+  resolveProductConfig,
+  toStackConstructId,
+} from "../lib/product-config.js";
 
 const repoRoot = path.resolve(
   path.dirname(fileURLToPath(import.meta.url)),
@@ -29,17 +33,20 @@ function patchProdToml(apiUrl: string): void {
 }
 
 function readApiUrlFromOutputs(): string | undefined {
+  const { productSlug } = resolveProductConfig();
+  const stackKey = toStackConstructId(productSlug);
+  const apiUrlEnvKey = `${productSlug.toUpperCase().replace(/-/g, "_")}_API_URL`;
   const outputsPath = path.join(repoRoot, "cdk.out", "outputs.json");
   if (!fs.existsSync(outputsPath)) {
-    return process.env.WALTER_API_URL;
+    return process.env[apiUrlEnvKey];
   }
   const outputs = JSON.parse(fs.readFileSync(outputsPath, "utf8")) as Record<
     string,
     Record<string, string>
   >;
-  const stack = outputs["WalterStack"];
+  const stack = outputs[stackKey];
   if (!stack) {
-    return process.env.WALTER_API_URL;
+    return process.env[apiUrlEnvKey];
   }
   return (
     stack.ApiUrl ??
@@ -56,8 +63,9 @@ execSync("npx cdk deploy -c mode=prod --require-approval never", {
 
 const apiUrl = readApiUrlFromOutputs();
 if (!apiUrl) {
+  const { productSlug } = resolveProductConfig();
   throw new Error(
-    "Could not determine ApiUrl from CDK outputs. Set WALTER_API_URL.",
+    `Could not determine ApiUrl from CDK outputs. Set ${productSlug.toUpperCase().replace(/-/g, "_")}_API_URL.`,
   );
 }
 

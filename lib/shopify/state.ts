@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { resolveProductConfig } from "../product-config.js";
 import { getRepoRoot } from "./cli.js";
 
 export interface ProductState {
@@ -15,11 +16,19 @@ export interface ShopifyState {
   updatedAt: string;
 }
 
-const STATE_DIR = ".walter";
+const STATE_DIR = ".storefront";
 const STATE_FILE = "shopify-state.json";
 
+function getProductSlug(): string {
+  return resolveProductConfig().productSlug;
+}
+
+export function getStateDir(): string {
+  return path.join(getRepoRoot(), STATE_DIR, getProductSlug());
+}
+
 export function getStatePath(): string {
-  return path.join(getRepoRoot(), STATE_DIR, STATE_FILE);
+  return path.join(getStateDir(), STATE_FILE);
 }
 
 export function readState(): ShopifyState | undefined {
@@ -37,7 +46,7 @@ export function writeState(state: ShopifyState): void {
 }
 
 export function ensureMutationsDir(): string {
-  const dir = path.join(getRepoRoot(), STATE_DIR, "mutations");
+  const dir = path.join(getStateDir(), "mutations");
   fs.mkdirSync(dir, { recursive: true });
   return dir;
 }

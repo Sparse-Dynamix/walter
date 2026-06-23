@@ -87,7 +87,7 @@ export function shopifyStoreExecJson<T>(
 }
 
 function shopifyAppToml(): string {
-  return (process.env.WALTER_MODE ?? "dev") === "prod"
+  return (process.env.DEPLOY_MODE ?? "dev") === "prod"
     ? "shopify.app.prod.toml"
     : "shopify.app.dev.toml";
 }

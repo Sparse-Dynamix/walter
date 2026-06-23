@@ -9,10 +9,6 @@ describe("webhook flow", () => {
   beforeAll(() => {
     requireDocker();
     requireEnv("SHOPIFY_WEBHOOK_SECRET");
-    process.env.DYNAMODB_ENDPOINT ??= "http://localhost:8000";
-    process.env.SES_ENDPOINT ??= "http://localhost:8005";
-    process.env.TABLE_NAME ??= "walter-api-keys";
-    process.env.SENDER_EMAIL ??= "noreply@example.com";
     execSync("docker compose up -d dynamodb-local ses-local", {
       stdio: "inherit",
     });
@@ -25,7 +21,7 @@ describe("webhook flow", () => {
     const payload = {
       id: Number(orderId),
       email: "test@example.com",
-      line_items: [{ title: "Walter Starter" }],
+      line_items: [{ title: "Starter" }],
     };
     const rawBody = JSON.stringify(payload);
     const hmac = createHmac("sha256", secret)

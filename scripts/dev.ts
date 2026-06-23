@@ -4,6 +4,7 @@ import { loadEnv } from "../lib/load-env.js";
 loadEnv();
 
 import { spawn, type ChildProcess } from "node:child_process";
+import { resolveProductConfig } from "../lib/product-config.js";
 
 const PORT = Number(process.env.PORT ?? 8787);
 const children: ChildProcess[] = [];
@@ -68,6 +69,7 @@ async function waitForDocker(): Promise<void> {
 }
 
 async function main(): Promise<void> {
+  const { productName } = resolveProductConfig();
   const { serve } = await import("@hono/node-server");
   const { app } = await import("../api/index.js");
 
@@ -76,7 +78,7 @@ async function main(): Promise<void> {
   run("npx", ["tsx", "scripts/dynamodb-init.ts"]);
 
   serve({ fetch: app.fetch, port: PORT }, () => {
-    console.log(`Walter API listening on http://localhost:${PORT}`);
+    console.log(`${productName} API listening on http://localhost:${PORT}`);
   });
 
   run("ngrok", ["http", String(PORT)]);

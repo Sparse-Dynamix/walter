@@ -12,22 +12,26 @@ import * as React from "react";
 
 export interface ApiKeyEmailProps {
   apiKey: string;
+  productName: string;
   productLabel: string;
   recipientEmail: string;
 }
 
 export function ApiKeyEmail({
   apiKey,
+  productName,
   productLabel,
   recipientEmail,
 }: ApiKeyEmailProps) {
   return (
     <Html>
       <Head />
-      <Preview>Your API key for {productLabel}</Preview>
+      <Preview>
+        Your {productName} API key for {productLabel}
+      </Preview>
       <Body style={main}>
         <Container style={container}>
-          <Heading style={heading}>Your Walter API Key</Heading>
+          <Heading style={heading}>Your {productName} API Key</Heading>
           <Text>Hi,</Text>
           <Text>
             Thanks for purchasing <strong>{productLabel}</strong>. Here is your
@@ -37,7 +41,8 @@ export function ApiKeyEmail({
             <Text style={code}>{apiKey}</Text>
           </Section>
           <Text>
-            Keep this key secret. Use it with Walter&apos;s /api/check endpoint.
+            Keep this key secret. Use the /api/check endpoint to verify your
+            key.
           </Text>
         </Container>
       </Body>

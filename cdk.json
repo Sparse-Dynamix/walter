@@ -1,5 +1,5 @@
 {
-  "app": "npx tsx bin/walter.ts",
+  "app": "npx tsx bin/storefront.ts",
   "watch": {
     "include": ["**"],
     "exclude": [
